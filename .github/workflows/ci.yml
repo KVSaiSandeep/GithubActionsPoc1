@@ -17,9 +17,11 @@ jobs:
           node-version: "14.x"
       - run: npm ci
       - run: npm run prettier-check
+      - run: |
+          touch .env
+          echo MONGODB_URL =${{ secrets.MONGODB_URL }} >> .env
       - run: npm test -- --coverage
-        env:
-          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+
       # - name: Deploying code to Productions from master
       #   if: github.ref == 'refs/heads/master'
       #   run:
