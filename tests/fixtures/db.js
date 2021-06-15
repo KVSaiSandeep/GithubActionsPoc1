@@ -60,20 +60,6 @@ const setupDatabase = async () => {
   await new Task(taskThree).save();
 };
 
-// beforeAll(async () => {
-//   const connection = mongoose.createConnection(
-//     "mongodb+srv://SaiSandeep:SaiSandeep@1304@cluster.ecfrw.mongodb.net/task-manager-api?retryWrites=true&w=majority",
-//     {
-//       useNewUrlParser: true,
-//       useCreateIndex: true,
-//       useFindAndModify: false,
-//     }
-//   );
-// });
-
-// afterAll(async () => {
-//   connection.close();
-// });
 module.exports = {
   userOneId,
   userOne,
