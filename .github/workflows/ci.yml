@@ -6,7 +6,7 @@ on:
   push:
     branches: [develop, master, sandbox]
 env:
-  MONGODB_URL : ${{ secrets.MONGODB_URL }}
+  MONGODB_URL: ${{ secrets.MONGODB_URL }}
 
 jobs:
   build:
