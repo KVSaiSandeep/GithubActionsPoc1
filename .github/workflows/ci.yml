@@ -18,5 +18,8 @@ jobs:
       - run: npm ci
       - run: npm run prettier-check
       - run: npm test -- --coverage
-      - name: Deploying code to Productions from master
-        run: echo ${{github.ref}}
+        env:
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+      # - name: Deploying code to Productions from master
+      #   if: github.ref == 'refs/heads/master'
+      #   run: 
