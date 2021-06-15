@@ -16,6 +16,7 @@ jobs:
           echo MONGODB_URL = ${{ secrets.MONGODB_URL }} >> .env
           echo JWT_SECRET = ${{secrets.JWT_SECRET}} >> .env
           cat .env
+      - run: echo ${{ secrets.MONGODB_URL }}
       - run: ls ${{github.workspace}} -a
       - name: Use NodeJS
         uses: actions/setup-node@v1
