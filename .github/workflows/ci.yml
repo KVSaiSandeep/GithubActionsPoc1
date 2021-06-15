@@ -5,6 +5,8 @@ on:
     branches: [develop, master]
   push:
     branches: [develop, master, sandbox]
+env:
+  MONGODB_URL : ${{ secrets.MONGODB_URL }}
 
 jobs:
   build:
@@ -13,8 +15,8 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           touch .env
-          echo MONGODB_URL = ${{ secrets.MONGODB_URL }} >> .env
-      - run: echo "$(<.env)"
+          echo MONGODB_URL = $MONGODB_URL >> .env
+      - run: echo "$(cat .env)"
       - run: echo ${{ secrets.MONGODB_URL }}
       - run: ls ${{github.workspace}} -a
       - name: Use NodeJS
