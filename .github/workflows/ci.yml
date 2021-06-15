@@ -18,7 +18,6 @@ jobs:
           touch .env
           echo MONGODB_URL = $MONGODB_URL >> .env
           echo JWT_SECRET = $JWT_SECRET >> .env
-      - run: echo "$(cat .env)"
       - run: echo ${{ secrets.MONGODB_URL }}
       - run: ls ${{github.workspace}} -a
       - name: Use NodeJS
@@ -27,11 +26,21 @@ jobs:
           node-version: "14.x"
       - run: npm ci
       - run: npm run prettier-check
-        # echo JWT_SECRET = ${{secrets.JWT_SECRET}} >> .env
-        # cat .env
-
       - run: npm test -- --coverage
 
-      # - name: Deploying code to Productions from master
-      #   if: github.ref == 'refs/heads/master'
-      #   run:
+      - name: Deploying code to Productions from master
+        if: github.ref == 'refs/heads/master'
+        run: |
+          `cat >~/.netrc <<EOF
+          machine api.heroku.com
+              login $EMAIL
+              password $HEROKU_AUTH_TOKEN
+          machine git.heroku.com
+              login $EMAIL
+              password $HEROKU_AUTH_TOKEN
+          EOF`
+          heroku git:remote --app task-manager-poc1
+          git push heroku HEAD:master
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
