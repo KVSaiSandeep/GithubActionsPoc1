@@ -15,7 +15,7 @@ jobs:
           touch .env
           echo MONGODB_URL = ${{ secrets.MONGODB_URL }} >> .env
           cat .env
-      - run: ls ${{github.workspace}}
+      - run: ls ${{github.workspace}} -a
       - name: Use NodeJS
         uses: actions/setup-node@v1
         with:
