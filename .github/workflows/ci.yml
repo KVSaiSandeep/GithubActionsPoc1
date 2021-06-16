@@ -38,11 +38,12 @@ jobs:
         with:
           name: code-coverage
           path: coverage
+      - run: echo ${{github.ref}}
       - name: ZIP Assets
-        if: (github.ref == 'refs/heads/master' && github.event_name == 'pull_request')
+        if: ( github.event_name == 'pull_request')
         run: zip -r coverage.zip ./coverage
       - name: Create a Release
-        if: (github.ref == 'refs/heads/master' && github.event_name == 'pull_request')
+        if: ( github.event_name == 'pull_request')
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.CUSTOM_TOKEN}}
