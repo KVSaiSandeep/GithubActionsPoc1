@@ -30,19 +30,11 @@ jobs:
 
       - name: Deploying code to Productions from sandbox
         if: (github.ref == 'refs/heads/sandbox' && github.event_name == 'push')
-        run: |
-          `cat >~/.netrc <<EOF
-          machine api.heroku.com
-              login $EMAIL
-              password $HEROKU_AUTH_TOKEN
-          machine git.heroku.com
-              login $EMAIL
-              password $HEROKU_AUTH_TOKEN
-          EOF`
-
-          heroku git:remote --app task-manager-poc-dev
-          git fetch --all --unshallow
-          git push heroku HEAD:master
+        uses: akhileshns/heroku-deploy@v3.5.7 # This is the action we are importing
+        with: # It accepts some arguments to work, we can pass the argument using `with`
+          heroku_api_key: $HEROKU_AUTH_TOKEN # This is the same as the auth key we generated earlier
+          heroku_app_name: "task-manager-poc-dev" #Must be unique in Heroku
+          heroku_email: $EMAIL # Email attached to the account
         env:
           EMAIL: ${{ secrets.EMAIL }}
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
