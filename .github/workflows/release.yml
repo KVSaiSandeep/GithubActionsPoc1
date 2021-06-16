@@ -1,0 +1,22 @@
+name: Notify on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  Send_Mail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3.2.0
+        with:
+          server_address:  smtp.live.com
+          server_port: 465
+          username: ${{secrets.MAIL_USERNAME}}
+          password: ${{secrets.MAIL_PASSWORD}}
+          subject: Latest Release Update
+          to: korrapatisaisandeep@gmail.com
+          from: Sai Sandeep
+          secure: true
+          body: New Release ${{ github.event.release.tag_name}} is out, <${{github.event.release.html_url}}|Check it out now>

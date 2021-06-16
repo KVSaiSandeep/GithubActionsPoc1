@@ -31,13 +31,21 @@ jobs:
         with:
           node-version: "14.x"
       - run: npm ci
-      - run: npm run prettier-check
+      - run: npm run prettier-format        
       - run: npm test -- --coverage
       - name: Upload Test Coverage
         uses: actions/upload-artifact@v1
         with:
           name: code-coverage
           path: coverage
+      - name: ZIP Assets
+        if: (github.ref == 'refs/heads/master' && github.event_name == 'push')
+        run: zip -r coverage.zip ./coverage
+      - name: Create a Release
+        if: (github.ref == 'refs/heads/master' && github.event_name == 'push')
+        run: npx sematic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_TOKEN}}
       - name: Deploying code to Productions from sandbox
         if: (github.ref == 'refs/heads/sandbox' && github.event_name == 'push')
         uses: akhileshns/heroku-deploy@v3.5.7 # This is the action we are importing
@@ -59,3 +67,23 @@ jobs:
         env:
           EMAIL: ${{ secrets.EMAIL }}
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
+
+      - name: Open Issue
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          curl --request POST \
+          --url https://api.github.com/repos/${{
+            github.repository
+          }}/issues \
+          --header 'authorization: Bearer ${{
+            secrets.CUSTOM_TOKEN }}' \
+          --data '{
+            "title":"Automated Issue for Commit: ${{
+            github.sha}}",
+            "body":"This issue was automatically created by
+             the GitHub Action workflow **${{ github.workflow
+             }}**. \n\n The commit hash was: _${{ github.sha}}_.",
+            "assignes" ["${{
+             github.event.pull_request.user.login }}"]
+             }'
+
