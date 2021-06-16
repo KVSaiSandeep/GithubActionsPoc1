@@ -28,8 +28,8 @@ jobs:
       - run: npm run prettier-check
       - run: npm test -- --coverage
 
-      - name: Deploying code to Productions from master
-        if: github.ref == 'refs/heads/master'
+      - name: Deploying code to Productions from sandbox
+        if: (github.ref == 'refs/heads/sandbox' && github.event_name == 'push')
         run: |
           `cat >~/.netrc <<EOF
           machine api.heroku.com
@@ -39,7 +39,27 @@ jobs:
               login $EMAIL
               password $HEROKU_AUTH_TOKEN
           EOF`
-          heroku git:remote --app task-manager-poc1
+
+          heroku git:remote --app task-manager-poc-dev
+          git fetch --all --unshallow
+          git push heroku HEAD:master
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
+
+      - name: Deploying code to Productions from master
+        if: (github.ref == 'refs/heads/master' && github.event_name == 'push')
+        run: |
+          `cat >~/.netrc <<EOF
+          machine api.heroku.com
+              login $EMAIL
+              password $HEROKU_AUTH_TOKEN
+          machine git.heroku.com
+              login $EMAIL
+              password $HEROKU_AUTH_TOKEN
+          EOF`
+
+          heroku git:remote --app task-manager-poc-prod
           git fetch --all --unshallow
           git push heroku HEAD:master
         env:
