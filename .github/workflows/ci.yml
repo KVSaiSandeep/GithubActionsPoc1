@@ -40,6 +40,7 @@ jobs:
               password $HEROKU_AUTH_TOKEN
           EOF`
           heroku git:remote --app task-manager-poc1
+          git fetch --all --unshallow
           git push heroku HEAD:master
         env:
           EMAIL: ${{ secrets.EMAIL }}
