@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const User = require("../../src/models/user");
 const Task = require("../../src/models/task");

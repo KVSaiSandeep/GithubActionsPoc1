@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Cache node_modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{runner.os}}-node-${{ hashFiles('**/package-lock.json')}}
+          restore-keys: ${{runner.os}}-node-
       - run: |
           touch .env
           echo MONGODB_URL = $MONGODB_URL >> .env
@@ -25,22 +31,59 @@ jobs:
         with:
           node-version: "14.x"
       - run: npm ci
-      - run: npm run prettier-check
+      - run: npm run prettier-format        
       - run: npm test -- --coverage
-
-      - name: Deploying code to Productions from master
-        if: github.ref == 'refs/heads/master'
-        run: |
-          `cat >~/.netrc <<EOF
-          machine api.heroku.com
-              login $EMAIL
-              password $HEROKU_AUTH_TOKEN
-          machine git.heroku.com
-              login $EMAIL
-              password $HEROKU_AUTH_TOKEN
-          EOF`
-          heroku git:remote --app task-manager-poc1
-          git push heroku HEAD:master
+      - name: Upload Test Coverage
+        uses: actions/upload-artifact@v1
+        with:
+          name: code-coverage
+          path: coverage
+      - name: ZIP Assets
+        if: (github.ref == 'refs/heads/master' && github.event_name == 'push')
+        run: zip -r coverage.zip ./coverage
+      - name: Create a Release
+        if: (github.ref == 'refs/heads/master' && github.event_name == 'push')
+        run: npx sematic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_TOKEN}}
+      - name: Deploying code to Productions from sandbox
+        if: (github.ref == 'refs/heads/sandbox' && github.event_name == 'push')
+        uses: akhileshns/heroku-deploy@v3.5.7 # This is the action we are importing
+        with: # It accepts some arguments to work, we can pass the argument using `with`
+          heroku_api_key: $HEROKU_AUTH_TOKEN # This is the same as the auth key we generated earlier
+          heroku_app_name: "task-manager-poc-dev" #Must be unique in Heroku
+          heroku_email: $EMAIL # Email attached to the account
         env:
           EMAIL: ${{ secrets.EMAIL }}
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
+
+      - name: Deploying code to Productions from master
+        if: (github.ref == 'refs/heads/master' && github.event_name == 'push')
+        uses: akhileshns/heroku-deploy@v3.5.7 # This is the action we are importing
+        with: # It accepts some arguments to work, we can pass the argument using `with`
+          heroku_api_key: $HEROKU_AUTH_TOKEN # This is the same as the auth key we generated earlier
+          heroku_app_name: "task-manager-poc-prod" #Must be unique in Heroku
+          heroku_email: $EMAIL # Email attached to the account
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
+
+      - name: Open Issue
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          curl --request POST \
+          --url https://api.github.com/repos/${{
+            github.repository
+          }}/issues \
+          --header 'authorization: Bearer ${{
+            secrets.CUSTOM_TOKEN }}' \
+          --data '{
+            "title":"Automated Issue for Commit: ${{
+            github.sha}}",
+            "body":"This issue was automatically created by
+             the GitHub Action workflow **${{ github.workflow
+             }}**. \n\n The commit hash was: _${{ github.sha}}_.",
+            "assignes" ["${{
+             github.event.pull_request.user.login }}"]
+             }'
+
