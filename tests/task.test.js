@@ -11,7 +11,7 @@ const {
   taskThree,
   setupDatabase,
 } = require("./fixtures/db");
-
+beforeAll(() => jest.setTimeout(90 * 1000));
 beforeEach(setupDatabase);
 
 test("Should create task for user", async () => {
