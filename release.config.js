@@ -1,0 +1,10 @@
+module.exports = {
+  branches: "master",
+  repositoryUrl: "https://github.com/KVSaiSandeep/GithubActionsPoc1",
+  plugins: [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/npm",
+    "@semantic-release/github",
+  ]
+};
